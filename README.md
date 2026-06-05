@@ -6,7 +6,7 @@ A judicial-framework strategy skill for AI agents, built on CoinMarketCap real-t
 
 Built for the **BNB Hack: AI Trading Agent Edition** hackathon (Track 2 — Strategy Skills).
 
-Powered by [Verdict Protocol](https://verdictprotocol.online) — a universal on-chain verdict layer.
+Powered by THEMIS — a universal on-chain verdict layer.
 
 ---
 
