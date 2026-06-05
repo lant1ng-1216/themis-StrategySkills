@@ -128,10 +128,8 @@ python demo/main.py
 
 - [CoinMarketCap AI Agent Hub](https://coinmarketcap.com/api/agent) — exclusive real-time data layer
 - [Finnhub Economic Calendar](https://finnhub.io) — macro event data
-- DeepSeek / any OpenAI-compatible LLM — verdict reasoning engine
-- [Verdict Protocol](https://verdictprotocol.online) — the on-chain verdict layer this skill extends
-
+- Any OpenAI-compatible LLM — verdict reasoning engine
 ---
 
-*Themis-Verdict is a Track 2 submission for BNB Hack: AI Trading Agent Edition.*
+*Themis-Strategy Skills is a Track 2 submission for BNB Hack: AI Trading Agent Edition.*
 *Built by [@lant1ng-1216](https://github.com/lant1ng-1216)*
