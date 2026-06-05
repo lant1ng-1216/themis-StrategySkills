@@ -68,7 +68,7 @@ python demo/main.py
 
 Required API keys:
 - CoinMarketCap API: https://pro.coinmarketcap.com/signup
-- DeepSeek or any OpenAI-compatible LLM
+- Any OpenAI-compatible LLM
 - Finnhub API: https://finnhub.io/register
 
 ---
