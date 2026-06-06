@@ -86,6 +86,16 @@ Most CMC integrations pull a price and display it. Themis-Verdict uses CMC data 
 4. **Falsification Logic** — invalidation conditions are derived from live CMC thresholds, not static rules
 5. **Cross-Asset Synthesis** — 4 assets analyzed in parallel, with correlation observations powered by CMC data
 
+### Signal-to-Action Protocol
+
+Themis-Verdict includes a complete Signal-to-Action Protocol — structured execution rules that tell AI agents exactly how to consume verdict signals:
+- How to interpret confidence levels and size positions
+- When to enter, hold, or exit based on invalidation conditions
+- How to handle macro event warnings
+- Appeal mechanism re-evaluation rules at 24H
+
+This makes Themis-Verdict not just a strategy specification, but a complete, agent-executable trading framework.
+
 ### Key CMC Data Fields and How They Are Used
 
 - `derivatives_24h_percentage_change` — detects panic deleveraging vs. stabilization (volume change, not price)
