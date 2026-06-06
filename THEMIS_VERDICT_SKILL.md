@@ -227,6 +227,8 @@ Using the 7-dimension evidence, score each of the 5 regimes:
 **Select the regime with the highest score.**
 **Confidence = (regime score / total score) × 100%**
 
+**Tie-break rule**: When two regimes share the highest score, select the one that aligns with the primary price momentum direction (bearish momentum → prefer BEAR_TREND or PANIC_SELLOFF; bullish momentum → prefer RECOVERY or BULL_TREND).
+
 ### Regime Signal Bias
 
 | Regime | Signal Bias | Key Watchpoints |
@@ -433,11 +435,14 @@ Initial weights (all signals start at 1.0):
 | sectors | 1.0 | 0.1 – 2.0 |
 | stablecoin | 1.0 | 0.1 – 2.0 |
 
-After each verified verdict:
-- `outcome = correct` → all weights += 0.05 (max 2.0)
-- `outcome = incorrect` → all weights -= 0.05 (min 0.1)
+After each verified verdict, update weights for the **dimensions that contributed to the verdict direction**:
+- `outcome = correct` → contributing dimension weights += 0.05 (max 2.0)
+- `outcome = incorrect` → contributing dimension weights -= 0.05 (min 0.1)
+- Non-contributing dimensions: no change
 
-Future iterations should implement per-signal weight updates based on which individual signals were most predictive.
+A dimension "contributes" when its signal aligned with the final verdict conclusion (e.g., if verdict = bearish and dimension signal = bearish, it contributed).
+
+This ensures weights accurately reflect each dimension's individual predictive value over time.
 
 ---
 
@@ -468,6 +473,10 @@ Future iterations should implement per-signal weight updates based on which indi
 6. **48-hour validity only.** This skill produces short-term tactical verdicts. Re-run the full workflow for longer timeframes.
 
 7. **Appeal is mandatory.** Every verdict must include a 24-hour appeal mechanism.
+
+8. **Macro events reduce confidence.** When `macro_warning` is present, automatically reduce verdict confidence by 15% and recommend halving the suggested position size. State this explicitly in the verdict output.
+
+9. **Tie-break by momentum.** When regime scores are tied, defer to the primary price momentum direction as the deciding factor.
 
 ---
 
@@ -524,6 +533,48 @@ Appeal Mechanism (review at 2026-06-06 01:15 UTC):
 2. Derivatives volume — if declining, potential stabilization signal
 3. Stablecoin flow — if decelerating, defensive positioning may be ending
 ```
+
+---
+
+## Signal-to-Action Protocol
+
+When an AI agent or automated system consumes a Themis verdict, the following execution rules apply:
+
+### Interpreting the Signal
+
+| Field | Value | Recommended Action |
+|-------|-------|-------------------|
+| `conclusion` | bearish | Consider short position or reduce long exposure |
+| `conclusion` | bullish | Consider long position or increase exposure |
+| `conclusion` | neutral | Hold current position, await next verdict |
+| `confidence` | < 50% | Observe only, no position recommended |
+| `confidence` | 50–70% | Standard position (50% of allocated capital) |
+| `confidence` | > 70% | Full position (up to 75% of allocated capital) |
+| `macro_warning` | present | Halve position size, wait for event resolution |
+| `regime` | PANIC_SELLOFF | Widen stop loss, avoid chasing short entries |
+
+### Invalidation Handling
+
+When any `invalidation_condition` threshold is triggered:
+1. Exit the position immediately
+2. Log the triggered condition and the verdict ID
+3. Do NOT re-enter until a new verdict is issued
+4. Do NOT override the invalidation condition based on personal judgment
+
+### Risk Parameters
+
+- Maximum loss per verdict: 2% of total portfolio
+- Maximum simultaneous open verdicts: 3
+- Stop loss price: use `stoploss` field — do not modify
+- Position validity: use `valid_until` field — close position if verdict expires without target hit
+- When `macro_warning` is present: reduce position to 50% of normal size
+
+### Appeal Mechanism
+
+At `timestamp + 24 hours`, re-evaluate using `appeal_points`. If 2 or more appeal points indicate weakening verdict:
+- Reduce position by 50%
+- Tighten stop loss to 50% of original range
+- If all 3 appeal points indicate reversal: exit fully and await new verdict
 
 ---
 

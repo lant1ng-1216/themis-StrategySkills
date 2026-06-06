@@ -562,7 +562,7 @@ OUTPUT ONLY THIS JSON STRUCTURE (no markdown fences, no extra text):
     "key_support": "price string based on data",
     "key_resistance": "price string based on data"
   }},
-  "macro_warning": "null or one sentence warning if macro events in next 48h could impact the verdict"
+  "macro_warning": "null or one sentence warning if macro events in next 48h could impact the verdict. IMPORTANT: if macro_warning is not null, reduce confidence by 15% and note recommended position size is halved."
 }}
 
 {lang_note}"""
@@ -831,7 +831,37 @@ def verify_past_verdicts(symbol="BTC"):
         elif conclusion=="bullish": result="correct" if change_pct>2 else "incorrect" if change_pct<-2 else "inconclusive"
         else: result="inconclusive"
         weights=load_weights(); delta=0.05
+        # Get contributing dimensions from evidence summary
+        evidence_summary = record.get("verdict_data", {})
+        if isinstance(evidence_summary, dict):
+            ev_list = evidence_summary.get("evidence_summary", [])
+        else:
+            ev_list = []
+        verdict_conclusion = conclusion
+        # Map dimension names to weight keys
+        dim_key_map = {
+            "price momentum": "price_momentum",
+            "market sentiment": "sentiment",
+            "market breadth": "market_breadth",
+            "derivatives": "derivatives",
+            "btc dominance": "btc_dominance",
+            "sector rotation": "sectors",
+            "stablecoin": "stablecoin",
+        }
+        contributing_keys = set()
+        for ev in ev_list:
+            sig = ev.get("signal", "").lower()
+            dim = ev.get("dim", "").lower()
+            if sig == verdict_conclusion:
+                for keyword, key in dim_key_map.items():
+                    if keyword in dim:
+                        contributing_keys.add(key)
+        # If we can't determine contributing dims, fall back to all
+        if not contributing_keys:
+            contributing_keys = set(weights.keys())
         for k in weights:
+            if k not in contributing_keys:
+                continue
             if result=="correct": weights[k]=round(min(2.0,weights[k]+delta),3)
             elif result=="incorrect": weights[k]=round(max(0.1,weights[k]-delta),3)
         save_weights(weights)
